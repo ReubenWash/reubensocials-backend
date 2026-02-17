@@ -19,9 +19,11 @@ SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-change-this')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
 # ALLOWED_HOSTS: add your deployed backend URL
-ALLOWED_HOSTS = os.getenv(
-    'ALLOWED_HOSTS', '127.0.0.1,localhost'
-).split(',')
+ALLOWED_HOSTS = [
+    'localhost',
+    '127.0.0.1',
+    'reubensocials-backend.onrender.com',  # <-- add your Render URL here
+]
 
 # -------------------------
 # Applications
