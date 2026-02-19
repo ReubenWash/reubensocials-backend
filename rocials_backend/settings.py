@@ -3,7 +3,7 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 import stripe
-import dj_database_url  # <-- for production DB URL parsing
+import dj_database_url  # for production DB URL parsing
 
 # -------------------------
 # Load environment variables
@@ -18,11 +18,10 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-change-this')
 DEBUG = os.getenv('DEBUG', 'True') == 'True'
 
-# ALLOWED_HOSTS: add your deployed backend URL
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'reubensocials-backend.onrender.com',  # <-- add your Render URL here
+    'reubensocials-backend.onrender.com',  # Render backend
 ]
 
 # -------------------------
@@ -56,11 +55,11 @@ INSTALLED_APPS = [
 # -------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',  # serve static files
-    'django.contrib.sessions.middleware.SessionMiddleware',
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'corsheaders.middleware.CorsMiddleware',  # MUST be high
+    'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',
+    'django.middleware.csrf.CsrfViewMiddleware',  # CSRF protection
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -96,11 +95,12 @@ TEMPLATES = [
 WSGI_APPLICATION = 'rocials_backend.wsgi.application'
 
 # -------------------------
-# Database
+# Database (PostgreSQL recommended)
 # -------------------------
 DATABASES = {
     'default': dj_database_url.config(
-        default=f'sqlite:///{BASE_DIR}/db.sqlite3'
+        default=f'sqlite:///{BASE_DIR}/db.sqlite3',
+        conn_max_age=600
     )
 }
 
@@ -126,7 +126,7 @@ USE_TZ = True
 # Static & Media
 # -------------------------
 STATIC_URL = '/static/'
-STATIC_ROOT = BASE_DIR / 'staticfiles'  # for production collectstatic
+STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
 MEDIA_URL = '/media/'
@@ -165,13 +165,19 @@ SIMPLE_JWT = {
 }
 
 # -------------------------
-# CORS (VERY IMPORTANT)
+# CORS & CSRF (Fix cross-domain issues)
 # -------------------------
-CORS_ALLOWED_ORIGINS = os.getenv(
-    'CORS_ALLOWED_ORIGINS', 'http://localhost:5173,https://reubensocials-frontend.vercel.app'
-).split(',')
+CORS_ALLOWED_ORIGINS = [
+    'http://localhost:5173',  # local frontend
+    'https://reubensocials-frontend.vercel.app',  # deployed frontend
+]
 
 CORS_ALLOW_CREDENTIALS = True
+
+CSRF_TRUSTED_ORIGINS = [
+    'https://reubensocials-frontend.vercel.app',
+    'https://reubensocials-backend.onrender.com',
+]
 
 # -------------------------
 # Channels
@@ -192,7 +198,7 @@ STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', '')
 stripe.api_key = STRIPE_SECRET_KEY
 
 # -------------------------
-# Email (optional for password reset / notifications)
+# Email (optional)
 # -------------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')
