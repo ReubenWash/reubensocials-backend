@@ -3,7 +3,7 @@ from datetime import timedelta
 import os
 from dotenv import load_dotenv
 import stripe
-import dj_database_url  # for production DB URL parsing
+import dj_database_url
 
 # -------------------------
 # Load environment variables
@@ -21,7 +21,7 @@ DEBUG = os.getenv('DEBUG', 'True') == 'True'
 ALLOWED_HOSTS = [
     'localhost',
     '127.0.0.1',
-    'reubensocials-backend.onrender.com',  # Render backend
+    'reubensocials-backend.onrender.com',
 ]
 
 # -------------------------
@@ -35,12 +35,15 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework_simplejwt.token_blacklist',
 
     # Third party
     'rest_framework',
     'rest_framework_simplejwt',
     'corsheaders',
     'channels',
+    'cloudinary',
+    'cloudinary_storage',
 
     # Local apps
     'accounts',
@@ -56,10 +59,10 @@ INSTALLED_APPS = [
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'whitenoise.middleware.WhiteNoiseMiddleware',
-    'corsheaders.middleware.CorsMiddleware',  # MUST be high
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
-    'django.middleware.csrf.CsrfViewMiddleware',  # CSRF protection
+    'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
@@ -95,10 +98,9 @@ TEMPLATES = [
 WSGI_APPLICATION = 'rocials_backend.wsgi.application'
 
 # -------------------------
-# Database (PostgreSQL recommended)
+# Database
 # -------------------------
 DATABASES = {
-    
     'default': dj_database_url.config(
         default=os.getenv("DATABASE_URL"),
         conn_max_age=600,
@@ -125,14 +127,24 @@ USE_I18N = True
 USE_TZ = True
 
 # -------------------------
-# Static & Media
+# Static Files
 # -------------------------
 STATIC_URL = '/static/'
 STATIC_ROOT = BASE_DIR / 'staticfiles'
 STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 
+# -------------------------
+# Cloudinary Media Storage
+# -------------------------
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
+    'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
+    'API_SECRET': os.getenv('CLOUDINARY_API_SECRET'),
+}
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
 MEDIA_URL = '/media/'
-MEDIA_ROOT = BASE_DIR / 'media'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -167,11 +179,11 @@ SIMPLE_JWT = {
 }
 
 # -------------------------
-# CORS & CSRF (Fix cross-domain issues)
+# CORS & CSRF
 # -------------------------
 CORS_ALLOWED_ORIGINS = [
-    'http://localhost:5173',  # local frontend
-    'https://reubensocials-frontend.vercel.app',  # deployed frontend
+    'http://localhost:5173',
+    'https://reubensocials-frontend.vercel.app',
 ]
 
 CORS_ALLOW_CREDENTIALS = True
@@ -200,7 +212,7 @@ STRIPE_WEBHOOK_SECRET = os.getenv('STRIPE_WEBHOOK_SECRET', '')
 stripe.api_key = STRIPE_SECRET_KEY
 
 # -------------------------
-# Email (optional)
+# Email
 # -------------------------
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = os.getenv('EMAIL_HOST', 'smtp.gmail.com')

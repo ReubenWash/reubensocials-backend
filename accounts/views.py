@@ -5,14 +5,28 @@ from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.views import TokenObtainPairView
 from django.contrib.auth import get_user_model
 from django.db.models import Q
 
 from .models import Follow
-from .serializers import UserSerializer, UserRegistrationSerializer, ProfileUpdateSerializer
+from .serializers import (
+    UserSerializer,
+    UserRegistrationSerializer,
+    ProfileUpdateSerializer,
+    EmailTokenObtainPairSerializer
+)
 from notifications.models import Notification
 
 User = get_user_model()
+
+
+# -----------------------------
+# Login with Email (JWT)
+# -----------------------------
+class EmailTokenObtainPairView(TokenObtainPairView):
+    """Login with email instead of username"""
+    serializer_class = EmailTokenObtainPairSerializer
 
 
 # -----------------------------
@@ -47,7 +61,7 @@ class RegisterView(generics.CreateAPIView):
         refresh = RefreshToken.for_user(user)
 
         return Response({
-            'user': UserSerializer(user).data,
+            'user': UserSerializer(user, context={'request': request}).data,
             'tokens': {
                 'refresh': str(refresh),
                 'access': str(refresh.access_token),
@@ -128,8 +142,8 @@ def follow_user(request, username):
 
     if not created:
         follow.delete()
-        target_user.followers_count -= 1
-        request.user.following_count -= 1
+        target_user.followers_count = max(0, target_user.followers_count - 1)
+        request.user.following_count = max(0, request.user.following_count - 1)
         target_user.save()
         request.user.save()
         return Response({'message': 'Unfollowed', 'is_following': False})
@@ -190,6 +204,14 @@ def get_following(request, username):
 @permission_classes([IsAuthenticated])
 def logout_view(request):
     """
-    Logout user (frontend should also clear tokens)
+    Blacklist the refresh token on logout so it can't be reused.
+    Frontend must also clear tokens from localStorage.
     """
-    return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
+    try:
+        refresh_token = request.data.get('refresh')
+        if refresh_token:
+            token = RefreshToken(refresh_token)
+            token.blacklist()
+        return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
+    except Exception:
+        return Response({'message': 'Logged out successfully'}, status=status.HTTP_200_OK)
