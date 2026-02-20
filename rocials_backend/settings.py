@@ -98,9 +98,11 @@ WSGI_APPLICATION = 'rocials_backend.wsgi.application'
 # Database (PostgreSQL recommended)
 # -------------------------
 DATABASES = {
+    
     'default': dj_database_url.config(
-        default=f'sqlite:///{BASE_DIR}/db.sqlite3',
-        conn_max_age=600
+        default=os.getenv("DATABASE_URL"),
+        conn_max_age=600,
+        ssl_require=not DEBUG
     )
 }
 
