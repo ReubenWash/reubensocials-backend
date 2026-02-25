@@ -220,18 +220,3 @@ EMAIL_PORT = int(os.getenv('EMAIL_PORT', 587))
 EMAIL_USE_TLS = os.getenv('EMAIL_USE_TLS', 'True') == 'True'
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER', '')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD', '')
-
-
-# -------------------------
-# Content Security Policy (CSP) fix for Render
-# -------------------------
-# Allow scripts, images, and media from self and blob/data URLs
-CSP_DEFAULT_SRC = ("'self'",)
-CSP_SCRIPT_SRC = ("'self'", "blob:")
-CSP_IMG_SRC = ("'self'", "data:", "blob:", "https://res.cloudinary.com")
-CSP_STYLE_SRC = ("'self'", "'unsafe-inline'")
-CSP_FONT_SRC = ("'self'", "data:")
-CSP_CONNECT_SRC = ("'self'", "wss://reubensocials-backend.onrender.com", "https://api.cloudinary.com")
-
-# Optional: if you are using django-csp middleware
-MIDDLEWARE.insert(1, "csp.middleware.CSPMiddleware")
