@@ -16,7 +16,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Security
 # -------------------------
 SECRET_KEY = os.getenv('DJANGO_SECRET_KEY', 'django-insecure-change-this')
-DEBUG = os.getenv('DEBUG', 'True') == 'True'
+DEBUG = os.getenv('DEBUG', 'False') == 'True'
 
 ALLOWED_HOSTS = [
     'localhost',
@@ -35,11 +35,11 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'rest_framework_simplejwt.token_blacklist',
 
     # Third party
     'rest_framework',
     'rest_framework_simplejwt',
+    'rest_framework_simplejwt.token_blacklist',
     'corsheaders',
     'channels',
     'cloudinary',
@@ -58,8 +58,11 @@ INSTALLED_APPS = [
 # -------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'whitenoise.middleware.WhiteNoiseMiddleware',
+
+    # ✅ CORS MUST BE HERE (VERY HIGH)
     'corsheaders.middleware.CorsMiddleware',
+
+    'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -143,7 +146,6 @@ CLOUDINARY_STORAGE = {
 }
 
 DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
-
 MEDIA_URL = '/media/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
@@ -160,8 +162,9 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
+    # ✅ IMPORTANT FIX
     'DEFAULT_PERMISSION_CLASSES': (
-        'rest_framework.permissions.IsAuthenticated',
+        'rest_framework.permissions.AllowAny',
     ),
     'DEFAULT_PAGINATION_CLASS': 'rest_framework.pagination.PageNumberPagination',
     'PAGE_SIZE': 20,
@@ -179,7 +182,7 @@ SIMPLE_JWT = {
 }
 
 # -------------------------
-# CORS & CSRF
+# CORS SETTINGS
 # -------------------------
 CORS_ALLOWED_ORIGINS = [
     'http://localhost:5173',
@@ -188,6 +191,15 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
+# Allow all headers (important for JWT + preflight)
+CORS_ALLOW_HEADERS = list(os.environ.get('CORS_ALLOW_HEADERS', '').split(',')) + [
+    'authorization',
+    'content-type',
+]
+
+# -------------------------
+# CSRF
+# -------------------------
 CSRF_TRUSTED_ORIGINS = [
     'https://reubensocials-frontend.vercel.app',
     'https://reubensocials-backend.onrender.com',
