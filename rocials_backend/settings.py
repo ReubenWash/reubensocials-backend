@@ -4,6 +4,7 @@ import os
 from dotenv import load_dotenv
 import stripe
 import dj_database_url
+from corsheaders.defaults import default_headers
 
 # -------------------------
 # Load environment variables
@@ -162,7 +163,6 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ),
-    # ✅ IMPORTANT FIX
     'DEFAULT_PERMISSION_CLASSES': (
         'rest_framework.permissions.AllowAny',
     ),
@@ -191,8 +191,7 @@ CORS_ALLOWED_ORIGINS = [
 
 CORS_ALLOW_CREDENTIALS = True
 
-# Allow all headers (important for JWT + preflight)
-CORS_ALLOW_HEADERS = list(os.environ.get('CORS_ALLOW_HEADERS', '').split(',')) + [
+CORS_ALLOW_HEADERS = list(default_headers) + [
     'authorization',
     'content-type',
 ]
