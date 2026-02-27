@@ -1,5 +1,5 @@
 # payments/serializers.py
-
+from decimal import Decimal
 from rest_framework import serializers
 from .models import Wallet, WalletTransaction, Purchase, Payment
 
@@ -73,13 +73,14 @@ class PaymentSerializer(serializers.ModelSerializer):
         read_only_fields = ['id', 'created_at', 'updated_at']
 
 
+
+
 class AddFundsSerializer(serializers.Serializer):
-    """Serializer for adding funds request"""
     amount = serializers.DecimalField(
-        max_digits=10, 
+        max_digits=10,
         decimal_places=2,
-        min_value=1.00,
-        max_value=10000.00
+        min_value=Decimal("1.00"),
+        max_value=Decimal("10000.00")
     )
     
     def validate_amount(self, value):

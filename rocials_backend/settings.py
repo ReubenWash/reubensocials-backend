@@ -101,13 +101,15 @@ WSGI_APPLICATION = 'rocials_backend.wsgi.application'
 # -------------------------
 # Database
 # -------------------------
-if os.getenv('DATABASE_URL'):
+DATABASE_URL = os.getenv('DATABASE_URL', '')
+
+if DATABASE_URL and 'sqlite' not in DATABASE_URL:
     # Production (Render) - use PostgreSQL
     DATABASES = {
         'default': dj_database_url.config(
-            default=os.getenv('DATABASE_URL'),
+            default=DATABASE_URL,
             conn_max_age=600,
-            ssl_require=not DEBUG
+            ssl_require=True
         )
     }
 else:
