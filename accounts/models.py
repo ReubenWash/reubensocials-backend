@@ -1,12 +1,13 @@
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from cloudinary.models import CloudinaryField
 
 class User(AbstractUser):
     """Custom User model"""
     email = models.EmailField(unique=True)
     bio = models.TextField(max_length=500, blank=True)
-    profile_picture = models.ImageField(upload_to='profile_pics/', null=True, blank=True)
-    cover_photo = models.ImageField(upload_to='cover_photos/', null=True, blank=True)
+    profile_picture = CloudinaryField('image', null=True, blank=True)  # ✅ fixed
+    cover_photo = CloudinaryField('image', null=True, blank=True)      # ✅ fixed
     is_creator = models.BooleanField(default=False)
     followers_count = models.IntegerField(default=0)
     following_count = models.IntegerField(default=0)

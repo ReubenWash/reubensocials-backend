@@ -59,10 +59,7 @@ INSTALLED_APPS = [
 # -------------------------
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-
-    # ✅ CORS MUST BE HERE (VERY HIGH)
     'corsheaders.middleware.CorsMiddleware',
-
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -104,13 +101,23 @@ WSGI_APPLICATION = 'rocials_backend.wsgi.application'
 # -------------------------
 # Database
 # -------------------------
-DATABASES = {
-    'default': dj_database_url.config(
-        default=os.getenv("DATABASE_URL"),
-        conn_max_age=600,
-        ssl_require=not DEBUG
-    )
-}
+if os.getenv('DATABASE_URL'):
+    # Production (Render) - use PostgreSQL
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=os.getenv('DATABASE_URL'),
+            conn_max_age=600,
+            ssl_require=not DEBUG
+        )
+    }
+else:
+    # Local development - use SQLite
+    DATABASES = {
+        'default': {
+            'ENGINE': 'django.db.backends.sqlite3',
+            'NAME': BASE_DIR / 'db.sqlite3',
+        }
+    }
 
 # -------------------------
 # Password validation
@@ -140,6 +147,15 @@ STATICFILES_STORAGE = 'whitenoise.storage.CompressedManifestStaticFilesStorage'
 # -------------------------
 # Cloudinary Media Storage
 # -------------------------
+import cloudinary
+
+cloudinary.config(
+    cloud_name=os.getenv('CLOUDINARY_CLOUD_NAME'),
+    api_key=os.getenv('CLOUDINARY_API_KEY'),
+    api_secret=os.getenv('CLOUDINARY_API_SECRET'),
+    secure=True
+)
+
 CLOUDINARY_STORAGE = {
     'CLOUD_NAME': os.getenv('CLOUDINARY_CLOUD_NAME'),
     'API_KEY': os.getenv('CLOUDINARY_API_KEY'),
